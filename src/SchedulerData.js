@@ -1,5 +1,4 @@
 import moment from "moment";
-import { RRuleSet, rrulestr } from "rrule";
 import config from "./config";
 import behaviors from "./behaviors";
 import { checkConflict } from "./Util";
@@ -539,89 +538,89 @@ export default class SchedulerData {
   }
 
   _handleRecurringEvents() {
-    let recurringEvents = this.events.filter((x) => !!x.rrule);
-    recurringEvents.forEach((item) => {
-      this._detachEvent(item);
-    });
+    // let recurringEvents = this.events.filter((x) => !!x.rrule);
+    // recurringEvents.forEach((item) => {
+    //   this._detachEvent(item);
+    // });
 
-    recurringEvents.forEach((item) => {
-      let windowStart = this.localeMoment(this.startDate),
-        windowEnd = this.localeMoment(this.endDate).add(1, "days"),
-        oldStart = this.localeMoment(item.start),
-        oldEnd = this.localeMoment(item.end),
-        rule = rrulestr(item.rrule),
-        oldDtstart = undefined,
-        oldUntil = rule.origOptions.until || windowEnd.toDate();
-      if (!!rule.origOptions.dtstart) {
-        oldDtstart = this.localeMoment(rule.origOptions.dtstart);
-      }
-      //rule.origOptions.dtstart = oldStart.toDate();
-      if (windowEnd < oldUntil) {
-        rule.origOptions.until = windowEnd.toDate();
-      }
+    // recurringEvents.forEach((item) => {
+    //   let windowStart = this.localeMoment(this.startDate),
+    //     windowEnd = this.localeMoment(this.endDate).add(1, "days"),
+    //     oldStart = this.localeMoment(item.start),
+    //     oldEnd = this.localeMoment(item.end),
+    //     rule = rrulestr(item.rrule),
+    //     oldDtstart = undefined,
+    //     oldUntil = rule.origOptions.until || windowEnd.toDate();
+    //   if (!!rule.origOptions.dtstart) {
+    //     oldDtstart = this.localeMoment(rule.origOptions.dtstart);
+    //   }
+    //   //rule.origOptions.dtstart = oldStart.toDate();
+    //   if (windowEnd < oldUntil) {
+    //     rule.origOptions.until = windowEnd.toDate();
+    //   }
 
-      //reload
-      rule = rrulestr(rule.toString());
-      if (item.exdates || item.exrule) {
-        const rruleSet = new RRuleSet();
-        rruleSet.rrule(rule);
-        if (item.exrule) {
-          rruleSet.exrule(rrulestr(item.exrule));
-        }
-        if (item.exdates) {
-          item.exdates.forEach((exdate) => {
-            rruleSet.exdate(this.localeMoment(exdate).toDate());
-          });
-        }
-        rule = rruleSet;
-      }
+    //   //reload
+    //   rule = rrulestr(rule.toString());
+    //   if (item.exdates || item.exrule) {
+    //     const rruleSet = new RRuleSet();
+    //     rruleSet.rrule(rule);
+    //     if (item.exrule) {
+    //       rruleSet.exrule(rrulestr(item.exrule));
+    //     }
+    //     if (item.exdates) {
+    //       item.exdates.forEach((exdate) => {
+    //         rruleSet.exdate(this.localeMoment(exdate).toDate());
+    //       });
+    //     }
+    //     rule = rruleSet;
+    //   }
 
-      let all = rule.all();
-      let newEvents = all.map((time, index) => {
-        return {
-          ...item,
-          recurringEventId: item.id,
-          recurringEventStart: item.start,
-          recurringEventEnd: item.end,
-          id: `${item.id}-${index}`,
-          start: rule.origOptions.tzid
-            ? this.localeMoment
-                .utc(time)
-                .utcOffset(this.localeMoment().utcOffset(), true)
-                .format(DATETIME_FORMAT)
-            : this.localeMoment(time).format(DATETIME_FORMAT),
-          end: rule.origOptions.tzid
-            ? this.localeMoment
-                .utc(time)
-                .utcOffset(this.localeMoment().utcOffset(), true)
-                .add(oldEnd.diff(oldStart), "ms")
-                .add(
-                  this.localeMoment(oldUntil).utcOffset() -
-                    this.localeMoment(item.start).utcOffset(),
-                  "m"
-                )
-                .format(DATETIME_FORMAT)
-            : this.localeMoment(time)
-                .add(oldEnd.diff(oldStart), "ms")
-                .format(DATETIME_FORMAT),
-        };
-      });
-      newEvents.forEach((newEvent) => {
-        let eventStart = this.localeMoment(newEvent.start),
-          eventEnd = this.localeMoment(newEvent.end);
-        if (
-          this.isEventInTimeWindow(
-            eventStart,
-            eventEnd,
-            windowStart,
-            windowEnd
-          ) &&
-          (!oldDtstart || eventStart >= oldDtstart)
-        ) {
-          this._attachEvent(newEvent);
-        }
-      });
-    });
+    //   let all = rule.all();
+    //   let newEvents = all.map((time, index) => {
+    //     return {
+    //       ...item,
+    //       recurringEventId: item.id,
+    //       recurringEventStart: item.start,
+    //       recurringEventEnd: item.end,
+    //       id: `${item.id}-${index}`,
+    //       start: rule.origOptions.tzid
+    //         ? this.localeMoment
+    //             .utc(time)
+    //             .utcOffset(this.localeMoment().utcOffset(), true)
+    //             .format(DATETIME_FORMAT)
+    //         : this.localeMoment(time).format(DATETIME_FORMAT),
+    //       end: rule.origOptions.tzid
+    //         ? this.localeMoment
+    //             .utc(time)
+    //             .utcOffset(this.localeMoment().utcOffset(), true)
+    //             .add(oldEnd.diff(oldStart), "ms")
+    //             .add(
+    //               this.localeMoment(oldUntil).utcOffset() -
+    //                 this.localeMoment(item.start).utcOffset(),
+    //               "m"
+    //             )
+    //             .format(DATETIME_FORMAT)
+    //         : this.localeMoment(time)
+    //             .add(oldEnd.diff(oldStart), "ms")
+    //             .format(DATETIME_FORMAT),
+    //     };
+    //   });
+    //   newEvents.forEach((newEvent) => {
+    //     let eventStart = this.localeMoment(newEvent.start),
+    //       eventEnd = this.localeMoment(newEvent.end);
+    //     if (
+    //       this.isEventInTimeWindow(
+    //         eventStart,
+    //         eventEnd,
+    //         windowStart,
+    //         windowEnd
+    //       ) &&
+    //       (!oldDtstart || eventStart >= oldDtstart)
+    //     ) {
+    //       this._attachEvent(newEvent);
+    //     }
+    //   });
+    // });
   }
 
   _resolveDate(num, date = undefined) {
